@@ -1,0 +1,71 @@
+import { ChilizAgent } from '../../src';
+import { ChilizProvider } from '../../src/core/provider';
+import { ChilizSigner } from '../../src/core/signer';
+import { validateConfig } from '../../src/utils/config';
+
+// Mock the provider to avoid actual network calls
+jest.mock('../../src/core/provider', () => {
+  const mockProvider = {
+    getNetwork: jest.fn().mockResolvedValue({ chainId: 88888n }),
+    destroy: jest.fn(),
+  };
+  return {
+    ChilizProvider: {
+      getRpcProvider: jest.fn().mockResolvedValue(mockProvider),
+    },
+  };
+});
+
+// Mock the signer
+jest.mock('../../src/core/signer');
+
+// Mock the config
+jest.mock('../../src/utils/config', () => ({
+  getConfig: jest.fn((key: string) => {
+    if (key === 'PRIVATE_KEY') return '0x0000000000000000000000000000000000000000000000000000000000000001';
+    if (key === 'CHILIZ_RPC_URL') return 'mock-rpc-url';
+    return 'mock-value';
+  }),
+  validateConfig: jest.fn(),
+}));
+
+describe('ChilizAgent', () => {
+  let agent: ChilizAgent;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    agent = new ChilizAgent();
+  });
+
+  describe('initialization', () => {
+    it('should initialize all services', () => {
+      expect(agent.transaction).toBeDefined();
+      expect(agent.contract).toBeDefined();
+      expect(agent.events).toBeDefined();
+      expect(agent.data).toBeDefined();
+    });
+  });
+
+  describe('getChainId', () => {
+    it('should return the correct chain ID', async () => {
+      // The mock is configured to return 88888n
+      const chainId = await agent.getChainId();
+      expect(chainId).toBe(88888n);
+    });
+  });
+
+  describe('signMessage', () => {
+    it('should sign messages correctly', async () => {
+      const message = 'Test message';
+      const expectedSignature = '0x123...';
+      const mockSignerInstance = {
+        signMessage: jest.fn().mockResolvedValue(expectedSignature),
+      };
+      (ChilizSigner.getSigner as jest.Mock).mockResolvedValue(mockSignerInstance);
+
+      const signature = await agent.signMessage(message);
+      expect(signature).toBe(expectedSignature);
+      expect(mockSignerInstance.signMessage).toHaveBeenCalledWith(message);
+    });
+  });
+}); 
