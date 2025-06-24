@@ -1,23 +1,14 @@
 import { ethers } from 'ethers';
-import { ChilizProvider } from '../core/provider';
 import { Logger } from '../utils/logger';
 
 export class DataFetcherService {
-  private provider!: ethers.JsonRpcProvider;
+  private provider: ethers.providers.Provider;
 
-  private constructor() {}
-
-  static async create(): Promise<DataFetcherService> {
-    const service = new DataFetcherService();
-    await service.initialize();
-    return service;
+  public constructor(provider: ethers.providers.Provider) {
+    this.provider = provider;
   }
 
-  private async initialize() {
-    this.provider = await ChilizProvider.getRpcProvider();
-  }
-
-  async getLatestBlock(): Promise<ethers.Block> {
+  async getLatestBlock(): Promise<ethers.providers.Block> {
     try {
       const block = await this.provider.getBlock('latest');
       if (!block) throw new Error('Failed to fetch latest block');
@@ -35,7 +26,7 @@ export class DataFetcherService {
     }
   }
 
-  async getBlockByNumber(blockNumber: number): Promise<ethers.Block> {
+  async getBlockByNumber(blockNumber: number): Promise<ethers.providers.Block> {
     try {
       const block = await this.provider.getBlock(blockNumber);
       if (!block) throw new Error(`Block ${blockNumber} not found`);
@@ -53,13 +44,13 @@ export class DataFetcherService {
     }
   }
 
-  async getTransactionReceipt(txHash: string): Promise<ethers.TransactionReceipt | null> {
+  async getTransactionReceipt(txHash: string): Promise<ethers.providers.TransactionReceipt | null> {
     try {
       const receipt = await this.provider.getTransactionReceipt(txHash);
       
       if (receipt) {
         Logger.info('Transaction receipt fetched', {
-          hash: receipt.hash,
+          hash: receipt.transactionHash,
           blockNumber: receipt.blockNumber,
           status: receipt.status
         });
@@ -96,7 +87,7 @@ export class DataFetcherService {
     blockTag: number | string = 'latest'
   ): Promise<string> {
     try {
-      const storage = await this.provider.getStorage(address, position, blockTag);
+      const storage = await this.provider.getStorageAt(address, position, blockTag);
       
       Logger.info('Storage slot fetched', {
         address,

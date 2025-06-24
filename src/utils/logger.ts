@@ -1,7 +1,7 @@
-import * as winston from 'winston';
+import winston from 'winston';
 
 export const Logger = winston.createLogger({
-  level: process.env.LOG_LEVEL || 'info',
+  level: 'info',
   format: winston.format.combine(
     winston.format.timestamp(),
     winston.format.json()
@@ -11,14 +11,9 @@ export const Logger = winston.createLogger({
       format: winston.format.combine(
         winston.format.colorize(),
         winston.format.simple()
-      )
+      ),
     }),
-    new winston.transports.File({ 
-      filename: 'error.log', 
-      level: 'error',
-      format: winston.format.json()
-    })
-  ]
+  ],
 });
 
 // Prevent exiting on uncaught errors, log them instead

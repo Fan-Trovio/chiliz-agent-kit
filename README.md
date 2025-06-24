@@ -1,11 +1,14 @@
 # Chiliz Agent Kit
 
-A production-ready TypeScript SDK for interacting with the Chiliz blockchain.
+[![npm version](https://img.shields.io/npm/v/chiliz-agent-kit.svg)](https://www.npmjs.com/package/chiliz-agent-kit)
+[![MIT License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+
+A modern, open source TypeScript SDK for interacting with the Chiliz blockchain.
 
 ## Features
 
-- 🔒 Secure transaction signing and private key management
-- 🌐 Robust RPC and WebSocket provider handling
+- 🔒 Secure transaction signing and private key management (Node.js & browser)
+- 🌐 Robust RPC provider handling (ethers v5)
 - 📝 Smart contract interactions with type safety
 - 🎯 Real-time event monitoring
 - 📊 Comprehensive blockchain data querying
@@ -14,7 +17,7 @@ A production-ready TypeScript SDK for interacting with the Chiliz blockchain.
 ## Installation
 
 ```bash
-npm install chiliz-agent-kit ethers@6
+npm install chiliz-agent-kit ethers@5
 ```
 
 ## Quick Start
@@ -31,7 +34,10 @@ PRIVATE_KEY=your-private-key-here
 ```typescript
 import { ChilizAgent } from 'chiliz-agent-kit';
 
-const agent = new ChilizAgent();
+const agent = await ChilizAgent.create({
+  rpcUrl: process.env.CHILIZ_RPC_URL!,
+  privateKey: process.env.PRIVATE_KEY!,
+});
 
 // Send CHZ
 await agent.transaction.sendCHZ('0x...', '100');
@@ -48,6 +54,19 @@ agent.events.subscribeToEvents(contract, 'Transfer', (event) => {
 // Query blockchain data
 const block = await agent.data.getLatestBlock();
 console.log('Latest block:', block.number);
+```
+
+## Browser Support
+
+- The SDK works in both Node.js and browser (Next.js, React, etc.) environments.
+- **Security warning:** Never expose real private keys in production browser apps. For dApps, use MetaMask or WalletConnect for user authentication.
+- If you see `setImmediate is not defined`, add this polyfill at the top of your entry file:
+
+```js
+if (typeof window !== "undefined" && typeof window.setImmediate === "undefined") {
+  // @ts-ignore
+  window.setImmediate = (fn: (...args: any[]) => void, ...args: any[]) => setTimeout(fn, 0, ...args);
+}
 ```
 
 ## Architecture
@@ -100,12 +119,16 @@ npm run lint
 
 ## Contributing
 
+We welcome contributions from the community!
+
 1. Fork the repository
-2. Create your feature branch
-3. Commit your changes
-4. Push to the branch
+2. Create your feature branch (`git checkout -b feature/your-feature`)
+3. Commit your changes (`git commit -am 'Add new feature'`)
+4. Push to the branch (`git push origin feature/your-feature`)
 5. Create a new Pull Request
+
+Please open issues for bugs, questions, or feature requests.
 
 ## License
 
-MIT 
+MIT — see [LICENSE](LICENSE) for details. 

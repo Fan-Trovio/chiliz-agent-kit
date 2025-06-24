@@ -1,33 +1,24 @@
 import { ethers } from 'ethers';
-import { ChilizProvider } from '../core/provider';
 import { Logger } from '../utils/logger';
 
 export class EventsService {
-  private provider!: ethers.JsonRpcProvider;
+  private provider: ethers.providers.Provider;
 
-  private constructor() {}
-
-  static async create(): Promise<EventsService> {
-    const service = new EventsService();
-    await service.initialize();
-    return service;
-  }
-
-  private async initialize() {
-    this.provider = await ChilizProvider.getRpcProvider();
+  public constructor(provider: ethers.providers.Provider) {
+    this.provider = provider;
   }
 
   async subscribeToEvents(
     contract: ethers.Contract,
     eventName: string,
-    callback: (event: ethers.EventLog) => void,
+    callback: (event: ethers.Event) => void,
     filter: any = {}
   ): Promise<void> {
     try {
       contract.on(eventName, (...args) => {
-        const event = args[args.length - 1] as ethers.EventLog;
+        const event = args[args.length - 1];
         Logger.info('Event received', {
-          address: contract.target,
+          address: contract.address,
           eventName,
           args: event.args
         });
@@ -35,14 +26,14 @@ export class EventsService {
       });
 
       Logger.info('Subscribed to event', {
-        address: contract.target,
+        address: contract.address,
         eventName,
         filter
       });
     } catch (error) {
       Logger.error('Failed to subscribe to event', {
         error,
-        address: contract.target,
+        address: contract.address,
         eventName
       });
       throw error;
@@ -55,7 +46,7 @@ export class EventsService {
     filter: any = {},
     fromBlock: number = 0,
     toBlock: number | string = 'latest'
-  ): Promise<ethers.EventLog[]> {
+  ): Promise<ethers.Event[]> {
     try {
       const events = await contract.queryFilter(
         contract.filters[eventName](filter),
@@ -64,18 +55,18 @@ export class EventsService {
       );
 
       Logger.info('Retrieved past events', {
-        address: contract.target,
+        address: contract.address,
         eventName,
         count: events.length,
         fromBlock,
         toBlock
       });
 
-      return events as ethers.EventLog[];
+      return events as ethers.Event[];
     } catch (error) {
       Logger.error('Failed to get past events', {
         error,
-        address: contract.target,
+        address: contract.address,
         eventName,
         fromBlock,
         toBlock
@@ -90,21 +81,21 @@ export class EventsService {
   ): Promise<void> {
     try {
       if (eventName) {
-        contract.off(eventName);
+        contract.removeAllListeners(eventName);
         Logger.info('Unsubscribed from event', {
-          address: contract.target,
+          address: contract.address,
           eventName
         });
       } else {
         contract.removeAllListeners();
         Logger.info('Unsubscribed from all events', {
-          address: contract.target
+          address: contract.address
         });
       }
     } catch (error) {
       Logger.error('Failed to unsubscribe from events', {
         error,
-        address: contract.target,
+        address: contract.address,
         eventName
       });
       throw error;

@@ -1,15 +1,15 @@
 import { ethers } from 'ethers';
 
 export namespace Contracts {
-  export interface ContractEventLog extends ethers.EventLog {
-    args: ethers.Result;
+  export interface ContractEventLog extends ethers.Event {
+    args: ethers.utils.Result;
   }
 
   export interface ContractError extends Error {
     code: string;
     reason?: string;
-    transaction?: ethers.TransactionResponse;
-    receipt?: ethers.TransactionReceipt;
+    transaction?: ethers.providers.TransactionResponse;
+    receipt?: ethers.providers.TransactionReceipt;
   }
 
   export interface ContractCallOptions {
@@ -26,16 +26,16 @@ export namespace Contracts {
 
   export interface ContractFactory {
     deploy(...args: any[]): Promise<ethers.Contract>;
-    getDeployTransaction(...args: any[]): ethers.TransactionRequest;
+    getDeployTransaction(...args: any[]): ethers.providers.TransactionRequest;
   }
 
-  export interface ContractInterface extends ethers.Interface {
-    functions: Record<string, ethers.FunctionFragment>;
-    events: Record<string, ethers.EventFragment>;
-    errors: Record<string, ethers.ErrorFragment>;
+  export interface ContractInterface extends ethers.utils.Interface {
+    functions: Record<string, ethers.utils.FunctionFragment>;
+    events: Record<string, ethers.utils.EventFragment>;
+    errors: Record<string, ethers.utils.ErrorFragment>;
   }
 
-  export interface ContractReceipt extends ethers.TransactionReceipt {
+  export interface ContractReceipt extends ethers.providers.TransactionReceipt {
     events?: Array<ContractEventLog>;
   }
 } 

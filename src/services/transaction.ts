@@ -1,29 +1,22 @@
 import { ethers } from 'ethers';
-import { ChilizProvider } from '../core/provider';
-import { ChilizSigner } from '../core/signer';
 import { Logger } from '../utils/logger';
 
 export class TransactionService {
-  private provider!: ethers.JsonRpcProvider;
-  private signer!: ethers.Wallet;
+  private provider: ethers.providers.Provider;
+  private signer: ethers.Signer;
 
-  private constructor() {}
-
-  static async create(): Promise<TransactionService> {
-    const service = new TransactionService();
-    await service.initialize();
-    return service;
-  }
-
-  private async initialize() {
-    this.provider = await ChilizProvider.getRpcProvider();
-    this.signer = await ChilizSigner.getSigner();
+  public constructor(signer: ethers.Signer) {
+    this.signer = signer;
+    if (!signer.provider) {
+      throw new Error("Signer must be connected to a provider.");
+    }
+    this.provider = signer.provider;
   }
 
   async sendCHZ(to: string, amount: string): Promise<string> {
     try {
-      const value = ethers.parseEther(amount);
-      const nonce = await this.signer.getNonce();
+      const value = ethers.utils.parseEther(amount);
+      const nonce = await this.signer.getTransactionCount();
       
       const tx = await this.signer.sendTransaction({
         to,
@@ -34,7 +27,7 @@ export class TransactionService {
 
       Logger.info('Transaction sent', { 
         hash: tx.hash,
-        from: this.signer.address,
+        from: await this.signer.getAddress(),
         to,
         amount,
         nonce
@@ -54,12 +47,12 @@ export class TransactionService {
   }
 
   async getBalance(address?: string): Promise<string> {
-    const targetAddress = address || this.signer.address;
+    const targetAddress = address || await this.signer.getAddress();
     const balance = await this.provider.getBalance(targetAddress);
-    return ethers.formatEther(balance);
+    return ethers.utils.formatEther(balance);
   }
 
-  async waitForTransaction(txHash: string, confirmations = 1): Promise<ethers.TransactionReceipt | null> {
+  async waitForTransaction(txHash: string, confirmations = 1): Promise<ethers.providers.TransactionReceipt | null> {
     try {
       const receipt = await this.provider.waitForTransaction(txHash, confirmations);
       Logger.info('Transaction confirmed', { 

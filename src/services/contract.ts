@@ -1,34 +1,27 @@
 import { ethers } from 'ethers';
-import { ChilizProvider } from '../core/provider';
-import { ChilizSigner } from '../core/signer';
 import { Logger } from '../utils/logger';
 
 export class ContractService {
-  private provider!: ethers.JsonRpcProvider;
-  private signer!: ethers.Wallet;
+  private provider: ethers.providers.Provider;
+  private signer: ethers.Signer;
 
-  private constructor() {}
-
-  static async create(): Promise<ContractService> {
-    const service = new ContractService();
-    await service.initialize();
-    return service;
+  public constructor(signer: ethers.Signer) {
+    this.signer = signer;
+    if (!signer.provider) {
+      throw new Error("Signer must be connected to a provider.");
+    }
+    this.provider = signer.provider;
   }
 
-  private async initialize() {
-    this.provider = await ChilizProvider.getRpcProvider();
-    this.signer = await ChilizSigner.getSigner();
+  getSigner(): ethers.Signer {
+    return this.signer;
   }
 
-  async getSigner(): Promise<ethers.Wallet> {
-    return ChilizSigner.getSigner();
-  }
-
-  async getContract(address: string, abi: ethers.InterfaceAbi): Promise<ethers.Contract> {
+  async getContract(address: string, abi: any): Promise<ethers.Contract> {
     return new ethers.Contract(address, abi, this.signer);
   }
 
-  async getContractWithProvider(address: string, abi: ethers.InterfaceAbi): Promise<ethers.Contract> {
+  async getContractWithProvider(address: string, abi: any): Promise<ethers.Contract> {
     return new ethers.Contract(address, abi, this.provider);
   }
 
@@ -60,13 +53,13 @@ export class ContractService {
     contract: ethers.Contract,
     method: string,
     args: any[] = [],
-    options: ethers.TransactionRequest = {}
-  ): Promise<ethers.TransactionResponse> {
+    options: ethers.providers.TransactionRequest = {}
+  ): Promise<ethers.providers.TransactionResponse> {
     try {
       const tx = await contract[method](...args, options);
       Logger.info('Contract transaction sent', {
         hash: tx.hash,
-        address: contract.target,
+        address: contract.address,
         method,
         args
       });
@@ -74,7 +67,7 @@ export class ContractService {
     } catch (error) {
       Logger.error('Contract transaction failed', {
         error,
-        address: contract.target,
+        address: contract.address,
         method,
         args
       });
@@ -86,15 +79,15 @@ export class ContractService {
     contract: ethers.Contract,
     method: string,
     args: any[] = [],
-    options: ethers.TransactionRequest = {}
-  ): Promise<bigint> {
+    options: ethers.providers.TransactionRequest = {}
+  ): Promise<ethers.BigNumber> {
     try {
-      const gas = await contract[method].estimateGas(...args, options);
+      const gas = await contract.estimateGas[method](...args, options);
       return gas;
     } catch (error) {
       Logger.error('Gas estimation failed', {
         error,
-        address: contract.target,
+        address: contract.address,
         method,
         args
       });

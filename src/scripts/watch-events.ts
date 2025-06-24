@@ -1,12 +1,22 @@
 import { ethers } from 'ethers';
-import { ChilizAgent } from '../src';
-import { Logger } from '../src/utils/logger';
-import CHZ_ABI from '../abis/CHZ.json';
+import { ChilizAgent } from '..';
+import { Logger } from '../utils/logger';
+import CHZ_ABI from '../../abis/CHZ.json';
+import { config } from 'dotenv';
+
+config();
 
 async function watchEvents() {
   try {
-    const agent = await ChilizAgent.create();
+    const rpcUrl = process.env.CHILIZ_RPC_URL;
+    const privateKey = process.env.PRIVATE_KEY;
     const tokenAddress = process.env.TOKEN_ADDRESS;
+
+    if (!rpcUrl || !privateKey) {
+      throw new Error("Missing CHILIZ_RPC_URL or PRIVATE_KEY in .env file for watching events");
+    }
+    
+    const agent = await ChilizAgent.create({ rpcUrl, privateKey });
 
     if (!tokenAddress) {
       throw new Error('TOKEN_ADDRESS environment variable is required');
@@ -30,7 +40,7 @@ async function watchEvents() {
         Logger.info('Transfer detected', {
           from,
           to,
-          value: ethers.formatEther(value),
+          value: ethers.utils.formatEther(value),
           transactionHash: event.transactionHash
         });
       }
@@ -45,7 +55,7 @@ async function watchEvents() {
         Logger.info('Approval detected', {
           owner,
           spender,
-          value: ethers.formatEther(value),
+          value: ethers.utils.formatEther(value),
           transactionHash: event.transactionHash
         });
       }

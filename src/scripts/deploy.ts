@@ -1,15 +1,25 @@
 import { ethers } from 'ethers';
-import { ChilizAgent } from '../src';
-import { Logger } from '../src/utils/logger';
+import { ChilizAgent } from '..';
+import { Logger } from '../utils/logger';
+import { config } from 'dotenv';
+
+config();
 
 async function main() {
   try {
-    const agent = await ChilizAgent.create();
+    const rpcUrl = process.env.CHILIZ_RPC_URL;
+    const privateKey = process.env.PRIVATE_KEY;
+
+    if (!rpcUrl || !privateKey) {
+      throw new Error("Missing CHILIZ_RPC_URL or PRIVATE_KEY in .env file for deployment");
+    }
+
+    const agent = await ChilizAgent.create({ rpcUrl, privateKey });
     
     // Example: Deploy an ERC20 token
     const tokenName = 'MyToken';
     const tokenSymbol = 'MTK';
-    const initialSupply = ethers.parseEther('1000000'); // 1 million tokens
+    const initialSupply = ethers.utils.parseEther('1000000'); // 1 million tokens
 
     const contractFactory = new ethers.ContractFactory(
       // ABI and bytecode would go here
