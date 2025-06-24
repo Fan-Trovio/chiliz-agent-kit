@@ -66,4 +66,75 @@ export class TransactionService {
       throw error;
     }
   }
+
+  /**
+   * Send ERC-20 tokens (fan tokens) to a recipient.
+   * @param tokenAddress The contract address of the ERC-20 token
+   * @param to The recipient address
+   * @param amount The amount to send (as a string, in whole tokens, e.g. '1.5')
+   * @param decimals (optional) The number of decimals for the token (default: 18)
+   * @returns The transaction hash
+   */
+  async sendERC20(tokenAddress: string, to: string, amount: string, decimals: number = 18): Promise<string> {
+    try {
+      // Minimal ERC-20 ABI for transfer
+      const ERC20_ABI = [
+        "function transfer(address to, uint256 amount) public returns (bool)",
+        "function decimals() public view returns (uint8)"
+      ];
+      const contract = new ethers.Contract(tokenAddress, ERC20_ABI, this.signer);
+      // Optionally fetch decimals from contract if not provided
+      let tokenDecimals = decimals;
+      if (decimals === undefined || decimals === null) {
+        try {
+          tokenDecimals = await contract.decimals();
+        } catch (e) {
+          tokenDecimals = 18; // fallback
+        }
+      }
+      const value = ethers.utils.parseUnits(amount, tokenDecimals);
+      const tx = await contract.transfer(to, value);
+      Logger.info('ERC20 transfer sent', {
+        hash: tx.hash,
+        token: tokenAddress,
+        from: await this.signer.getAddress(),
+        to,
+        amount,
+        tokenDecimals
+      });
+      const receipt = await tx.wait();
+      if (receipt?.status === 0) {
+        throw new Error('ERC20 token transfer failed');
+      }
+      return tx.hash;
+    } catch (error) {
+      Logger.error('Failed to send ERC20 token', { error, tokenAddress, to, amount });
+      throw error;
+    }
+  }
+
+  /**
+   * Get the balance of an ERC-20 token (fan token) for a given address.
+   * @param tokenAddress The contract address of the ERC-20 token
+   * @param address (optional) The address to check balance for (defaults to signer's address)
+   * @returns The formatted token balance as a string
+   */
+  async getTokenBalance(tokenAddress: string, address?: string): Promise<string> {
+    try {
+      const ERC20_ABI = [
+        "function balanceOf(address account) view returns (uint256)",
+        "function decimals() view returns (uint8)"
+      ];
+      const contract = new ethers.Contract(tokenAddress, ERC20_ABI, this.provider);
+      const targetAddress = address || await this.signer.getAddress();
+      const [rawBalance, decimals] = await Promise.all([
+        contract.balanceOf(targetAddress),
+        contract.decimals()
+      ]);
+      return ethers.utils.formatUnits(rawBalance, decimals);
+    } catch (error) {
+      Logger.error('Failed to fetch ERC20 token balance', { error, tokenAddress, address });
+      throw error;
+    }
+  }
 } 

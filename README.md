@@ -1,9 +1,24 @@
 # Chiliz Agent Kit
 
 [![npm version](https://img.shields.io/npm/v/chiliz-agent-kit.svg)](https://www.npmjs.com/package/chiliz-agent-kit)
+[![npm downloads](https://img.shields.io/npm/dw/chiliz-agent-kit.svg)](https://www.npmjs.com/package/chiliz-agent-kit)
 [![MIT License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-A modern, open source TypeScript SDK for interacting with the Chiliz blockchain.
+
+---
+
+## Install
+
+```bash
+npm install chiliz-agent-kit ethers@5
+```
+
+---
+
+- **Repository:** [github.com/Fan-Trovio/chiliz-agent-kit](https://github.com/Fan-Trovio/chiliz-agent-kit)
+- **NPM:** [npmjs.com/package/chiliz-agent-kit](https://www.npmjs.com/package/chiliz-agent-kit)
+
+---
 
 ## Features
 
@@ -13,12 +28,6 @@ A modern, open source TypeScript SDK for interacting with the Chiliz blockchain.
 - 🎯 Real-time event monitoring
 - 📊 Comprehensive blockchain data querying
 - 🔍 Detailed logging and error tracking
-
-## Installation
-
-```bash
-npm install chiliz-agent-kit ethers@5
-```
 
 ## Quick Start
 
@@ -42,6 +51,9 @@ const agent = await ChilizAgent.create({
 // Send CHZ
 await agent.transaction.sendCHZ('0x...', '100');
 
+// Send a fan token (ERC-20)
+await agent.transaction.sendERC20('0xFanTokenAddress...', '0xRecipient...', '10');
+
 // Interact with contracts
 const contract = await agent.contract.getContract(address, abi);
 await contract.someMethod();
@@ -64,7 +76,7 @@ console.log('Latest block:', block.number);
 
 ```js
 if (typeof window !== "undefined" && typeof window.setImmediate === "undefined") {
-  // @ts-ignore
+  // @ts-expect-error
   window.setImmediate = (fn: (...args: any[]) => void, ...args: any[]) => setTimeout(fn, 0, ...args);
 }
 ```
@@ -73,7 +85,7 @@ if (typeof window !== "undefined" && typeof window.setImmediate === "undefined")
 
 The SDK is organized into modular services:
 
-- `TransactionService`: Handle CHZ transfers and transaction management
+- `TransactionService`: Handle CHZ and fan token transfers
 - `ContractService`: Interact with smart contracts
 - `EventsService`: Subscribe to and query blockchain events
 - `DataFetcherService`: Query blockchain data and state
@@ -131,4 +143,4 @@ Please open issues for bugs, questions, or feature requests.
 
 ## License
 
-MIT — see [LICENSE](LICENSE) for details. 
+MIT — see [LICENSE](LICENSE) for details.
