@@ -4,6 +4,10 @@
   "description": "A production-ready TypeScript SDK for interacting with the Chiliz blockchain",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./langchain": "./dist/langchain/index.js"
+  },
   "scripts": {
     "build": "tsc",
     "clean": "rm -rf dist",
@@ -35,7 +39,12 @@
     "url": "https://github.com/Fan-Trovio/chiliz-agent-kit"
   },
   "dependencies": {
+    "@langchain/community": "^0.3.47",
+    "@langchain/core": "^0.3.61",
+    "@langchain/langgraph": "^0.3.5",
+    "@langchain/openai": "^0.5.15",
     "ethers": "^5.8.0",
+    "langchain": "^0.3.29",
     "winston": "^3.11.0"
   },
   "devDependencies": {
