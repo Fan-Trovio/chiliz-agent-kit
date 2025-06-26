@@ -36,7 +36,9 @@ export class ChilizAgent {
       throw new Error('privateKey and rpcUrl are required in config');
     }
 
-    this.provider = new ethers.providers.JsonRpcProvider(config.rpcUrl);
+    // Use StaticJsonRpcProvider with explicit chainId for Chiliz testnet
+    this.provider = new ethers.providers.StaticJsonRpcProvider(config.rpcUrl, 88882);
+    console.log('[ChilizAgent] Using StaticJsonRpcProvider with chainId:', 88882);
     this.signer = new ethers.Wallet(config.privateKey, this.provider);
 
     this.transaction = new TransactionService(this.signer);
@@ -44,6 +46,7 @@ export class ChilizAgent {
     this.events = new EventsService(this.provider);
     this.data = new DataFetcherService(this.provider);
 
+    // Optionally, you can still log the network info if needed
     const network = await this.provider.getNetwork();
     Logger.info('ChilizAgent initialized', {
       chainId: network.chainId,
