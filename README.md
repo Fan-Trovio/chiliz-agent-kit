@@ -75,13 +75,20 @@ The **Chiliz Agent Kit** is a TypeScript SDK designed specifically for interacti
 - 🎯 **Real-time**: Monitor blockchain events as they happen
 - 📝 **Type-safe**: Full TypeScript support with smart contract interactions
 - 🔍 **Detailed**: Comprehensive logging and error tracking
+- 🤖 **AI-Powered**: Built-in LangChain integration for intelligent automation
 
 ---
 
 ## 🛠️ Installation
 
+### Basic Installation
 ```bash
 npm install chiliz-agent-kit ethers@5
+```
+
+### For AI Integration (LangChain)
+```bash
+npm install chiliz-agent-kit ethers@5 @langchain/openai @langchain/core langchain
 ```
 
 **For TypeScript projects:**
@@ -98,8 +105,12 @@ npm install --save-dev @types/node
 Create a `.env` file in your project root:
 
 ```env
+# Chiliz Network Configuration
 CHILIZ_RPC_URL=https://rpc.chiliz.com
 PRIVATE_KEY=your-private-key-here
+
+# For AI Integration (Optional)
+OPENAI_API_KEY=your-openai-api-key-here
 ```
 
 **⚠️ Security Warning**: Never commit your `.env` file to version control! Add it to `.gitignore`.
@@ -223,6 +234,8 @@ Create AI-powered blockchain agents:
 
 ```typescript
 import { getChilizTools } from 'chiliz-agent-kit/langchain';
+import { ChatOpenAI } from '@langchain/openai';
+import { AgentExecutor } from 'langchain/agents';
 
 // Define available tokens
 const tokenMap = {
@@ -233,10 +246,22 @@ const tokenMap = {
 // Create AI tools
 const tools = getChilizTools(agent, tokenMap);
 
+// Set up the AI agent
+const llm = new ChatOpenAI({
+  modelName: 'gpt-4o',
+  temperature: 0,
+  openAIApiKey: process.env.OPENAI_API_KEY
+});
+
 // Use with LangChain agent
 const result = await agent.invoke({
   input: "Send 5 PSG tokens to 0xRecipientAddress"
 });
+```
+
+**Note**: You need an OpenAI API key in your `.env` file for AI integration:
+```env
+OPENAI_API_KEY=your-openai-api-key-here
 ```
 
 ---
@@ -283,6 +308,7 @@ try {
 2. **"Missing environment variables"** → Check your `.env` file and `config()` call
 3. **"Transaction failed"** → Check your balance and gas fees
 4. **"Insufficient token balance"** → Verify you have enough tokens
+5. **"Missing OPENAI_API_KEY"** → Add your OpenAI API key to `.env` for AI features
 
 ### Performance Tips
 
@@ -319,6 +345,7 @@ npm run watch
 |----------|-------------|----------|
 | `CHILIZ_RPC_URL` | Chiliz RPC endpoint | ✅ Yes |
 | `PRIVATE_KEY` | Your private key | ✅ Yes |
+| `OPENAI_API_KEY` | OpenAI API key (for AI features) | ❌ Optional |
 | `CHILIZ_WS_URL` | WebSocket endpoint | ❌ Optional |
 | `LOG_LEVEL` | Logging level (default: 'info') | ❌ Optional |
 | `LOG_FORMAT` | Log format ('json' or 'text') | ❌ Optional |
@@ -329,7 +356,7 @@ npm run watch
 
 - **📖 Full Documentation**: [DOCUMENTATION.md](./DOCUMENTATION.md)
 - **🌐 Chiliz Official**: [chiliz.com](https://chiliz.com)
-- **🔍 Chiliz Explorer**: [scan.chiliz.com](https://scan.chiliz.com)
+- **🔍 Chiliz Testnet Explorer**: [scan.chiliz.com](https://testnet.chiliscan.com)
 - **📦 NPM Package**: [npmjs.com/package/chiliz-agent-kit](https://npmjs.com/package/chiliz-agent-kit)
 
 ---

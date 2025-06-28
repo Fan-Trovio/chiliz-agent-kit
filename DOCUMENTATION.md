@@ -57,6 +57,7 @@ The **Chiliz Agent Kit** is a TypeScript SDK designed specifically for interacti
 - 🛠️ **Easy**: Simple API, great for beginners
 - 🌐 **Universal**: Works in Node.js and browsers
 - 📊 **Comprehensive**: Everything you need for blockchain apps
+- 🤖 **AI-Powered**: Built-in LangChain integration for intelligent automation
 
 ---
 
@@ -250,6 +251,8 @@ This is where it gets really cool! You can use AI to automatically perform block
 
 ```typescript
 import { getChilizTools } from 'chiliz-agent-kit/langchain';
+import { ChatOpenAI } from '@langchain/openai';
+import { AgentExecutor } from 'langchain/agents';
 
 // Define which tokens your AI agent knows about
 const tokenMap = {
@@ -261,10 +264,17 @@ const tokenMap = {
 // Create AI tools for the agent
 const tools = getChilizTools(agent, tokenMap);
 
-// Set up the AI agent
-const agent = new AgentExecutor({
+// Set up the AI agent with OpenAI
+const llm = new ChatOpenAI({
+  modelName: 'gpt-4o',
+  temperature: 0,
+  openAIApiKey: process.env.OPENAI_API_KEY
+});
+
+// Create the agent executor
+const agentExecutor = new AgentExecutor({
   agent: new OpenAIFunctionsAgent({
-    llm: new ChatOpenAI({ temperature: 0 }),
+    llm,
     tools,
     prompt: PromptTemplate.fromTemplate("You are a helpful blockchain assistant.")
   }),
@@ -273,9 +283,14 @@ const agent = new AgentExecutor({
 });
 
 // Now your AI can perform blockchain operations!
-const result = await agent.invoke({
+const result = await agentExecutor.invoke({
   input: "Send 5 PSG tokens to 0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6"
 });
+```
+
+**Note**: You need an OpenAI API key in your `.env` file for AI integration:
+```env
+OPENAI_API_KEY=your-openai-api-key-here
 ```
 
 ### 7. Utility Classes - Helper Functions
@@ -345,9 +360,19 @@ try {
 
 ### Step 1: Install Dependencies
 
+#### Basic Installation
 ```bash
 # Install the Chiliz Agent Kit and ethers.js
 npm install chiliz-agent-kit ethers@5
+
+# For TypeScript projects, types are included
+npm install --save-dev @types/node
+```
+
+#### For AI Integration (LangChain)
+```bash
+# Install the Chiliz Agent Kit with LangChain dependencies
+npm install chiliz-agent-kit ethers@5 @langchain/openai @langchain/core langchain
 
 # For TypeScript projects, types are included
 npm install --save-dev @types/node
@@ -364,6 +389,9 @@ CHILIZ_WS_URL=wss://ws.chiliz.com
 
 # Your private key (keep secure!)
 PRIVATE_KEY=your-private-key-here
+
+# For AI Integration (Optional)
+OPENAI_API_KEY=your-openai-api-key-here
 
 # Optional: Logging configuration
 LOG_LEVEL=info
@@ -568,7 +596,13 @@ if (typeof window !== "undefined" && typeof window.setImmediate === "undefined")
 - Make sure you're calling `config()` from dotenv
 - Check that the variable names match exactly
 
-#### 3. "Transaction failed"
+#### 3. "Missing OPENAI_API_KEY"
+**Problem**: You're trying to use AI features without an OpenAI API key.
+**Solution**: 
+- Add `OPENAI_API_KEY=your-openai-api-key-here` to your `.env` file
+- Get an API key from [OpenAI's platform](https://platform.openai.com/api-keys)
+
+#### 4. "Transaction failed"
 **Problem**: Transaction was rejected by the network.
 **Solutions**:
 - Check if you have enough CHZ for gas fees
@@ -576,7 +610,7 @@ if (typeof window !== "undefined" && typeof window.setImmediate === "undefined")
 - Make sure you're not sending more than your balance
 - Check if the network is congested
 
-#### 4. "Insufficient token balance"
+#### 5. "Insufficient token balance"
 **Problem**: You're trying to send more tokens than you have.
 **Solution**: Check your token balance first:
 ```typescript
@@ -584,7 +618,7 @@ const balance = await agent.transaction.getTokenBalance(tokenAddress);
 console.log('Available balance:', balance);
 ```
 
-#### 5. "Network error"
+#### 6. "Network error"
 **Problem**: Can't connect to the Chiliz network.
 **Solutions**:
 - Check your internet connection
@@ -612,7 +646,7 @@ console.log('Available balance:', balance);
 ## 📚 Additional Resources
 
 - **Chiliz Official**: [chiliz.com](https://chiliz.com)
-- **Chiliz Explorer**: [scan.chiliz.com](https://testnet.chiliscan.com/)
+- **Chiliz Explorer**: [scan.chiliz.com](https://testnet.chiliscan.com)
 - **GitHub Repository**: [github.com/Fan-Trovio/chiliz-agent-kit](https://github.com/Fan-Trovio/chiliz-agent-kit)
 - **NPM Package**: [npmjs.com/package/chiliz-agent-kit](https://npmjs.com/package/chiliz-agent-kit)
 
