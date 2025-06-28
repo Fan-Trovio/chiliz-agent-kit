@@ -80,7 +80,8 @@ export class TransactionService {
       // Minimal ERC-20 ABI for transfer
       const ERC20_ABI = [
         "function transfer(address to, uint256 amount) public returns (bool)",
-        "function decimals() public view returns (uint8)"
+        "function decimals() public view returns (uint8)",
+        "function balanceOf(address) view returns (uint256)"
       ];
       const contract = new ethers.Contract(tokenAddress, ERC20_ABI, this.signer);
       // Optionally fetch decimals from contract if not provided
@@ -93,11 +94,24 @@ export class TransactionService {
         }
       }
       const value = ethers.utils.parseUnits(amount, tokenDecimals);
+      const sender = await this.signer.getAddress();
+      const balance = await contract.balanceOf(sender);
+      console.log('[sendERC20] Sender:', sender);
+      console.log('[sendERC20] Recipient:', to);
+      console.log('[sendERC20] Token address:', tokenAddress);
+      console.log('[sendERC20] Decimals:', tokenDecimals);
+      console.log('[sendERC20] Amount to send (raw):', value.toString());
+      console.log('[sendERC20] Amount to send (formatted):', amount);
+      console.log('[sendERC20] Balance (raw):', balance.toString());
+      console.log('[sendERC20] Balance (formatted):', ethers.utils.formatUnits(balance, tokenDecimals));
+      if (balance.lt(value)) {
+        throw new Error('Insufficient token balance');
+      }
       const tx = await contract.transfer(to, value);
       Logger.info('ERC20 transfer sent', {
         hash: tx.hash,
         token: tokenAddress,
-        from: await this.signer.getAddress(),
+        from: sender,
         to,
         amount,
         tokenDecimals

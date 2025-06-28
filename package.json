@@ -1,6 +1,6 @@
 {
   "name": "chiliz-agent-kit",
-  "version": "1.0.16",
+  "version": "1.0.17",
   "description": "A production-ready TypeScript SDK for interacting with the Chiliz blockchain",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
